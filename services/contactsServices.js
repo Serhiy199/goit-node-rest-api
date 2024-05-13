@@ -6,8 +6,10 @@ const contactsPath = path.resolve('db', 'contacts.json');
 
 async function listContacts() {
     const arrContacts = await fs.readFile(contactsPath, { encoding: 'utf-8' });
+
     return JSON.parse(arrContacts);
 }
+listContacts();
 
 function writeContact(contacts) {
     return fs.writeFile(contactsPath, JSON.stringify(contacts, undefined, 2));
