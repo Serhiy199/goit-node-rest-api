@@ -41,12 +41,28 @@ async function removeContact(contactId) {
     return removeContact;
 }
 
-async function addContact(name, email, phone) {
+async function addContact(data) {
     const arrContacts = await listContacts();
-    const addContact = { id: crypto.randomUUID(), name, email, phone };
+    const addContact = { id: crypto.randomUUID(), ...data };
     arrContacts.push(addContact);
     await writeContact(arrContacts);
     return addContact;
 }
 
-export default { listContacts, getContactById, removeContact, addContact };
+async function updateContact(id, data) {
+    const contacts = await listContacts();
+    const index = contacts.findIndex(contact => contact.id === id);
+
+    if (index === -1) {
+        return null;
+    }
+
+    const oldContactsIngorm = contacts[index];
+
+    contacts[index] = { id, ...oldContactsIngorm, ...data };
+
+    await fs.writeFile(contactsPath, JSON.stringify(contacts, undefined, 2));
+    return contacts[index];
+}
+
+export default { listContacts, getContactById, removeContact, addContact, updateContact };
