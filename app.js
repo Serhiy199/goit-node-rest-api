@@ -9,17 +9,15 @@ import contactsRouter from './routes/contactsRouter.js';
 const app = express();
 const DB_URI = process.env.DB_URI;
 
-async function run() {
-    try {
-        await mongoose.connect(DB_URI);
-        console.log();
-
+mongoose
+    .connect(DB_URI)
+    .then(() => {
         console.log('Database connection successful');
-    } finally {
-        await mongoose.disconnect();
-    }
-}
-run().catch(process.exit(1));
+    })
+    .catch(err => {
+        console.log(err);
+        process.exit(1);
+    });
 
 app.use(morgan('tiny'));
 app.use(cors());
