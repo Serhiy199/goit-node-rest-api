@@ -4,12 +4,12 @@ export const createContactSchema = Joi.object({
     name: Joi.string().required(),
     email: Joi.string().email().required(),
     phone: Joi.required(),
-    favorite: Joi.boolean(),
+    favorite: Joi.string().min(4, 'utf8').max(5, 'utf8'),
 });
 
 export const updateContactSchema = Joi.object({
     name: Joi.string(),
     email: Joi.string().email(),
     phone: Joi.string(),
-    favorite: Joi.boolean(),
+    favorite: Joi.string().min(4, 'utf8').max(5, 'utf8'),
 });
