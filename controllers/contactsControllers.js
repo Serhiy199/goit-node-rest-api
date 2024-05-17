@@ -1,5 +1,9 @@
 import HttpError from '../helpers/HttpError.js';
-import { createContactSchema, updateContactSchema } from '../schemas/contactsSchemas.js';
+import {
+    createContactSchema,
+    updateContactSchema,
+    newUpdateStatusSchema,
+} from '../schemas/contactsSchemas.js';
 import Contact from '../models/contact.js';
 import { isValidObjectId } from 'mongoose';
 
@@ -16,7 +20,7 @@ export const getOneContact = async (req, res, next) => {
     try {
         const { id } = req.params;
         if (!isValidObjectId(id)) {
-            throw HttpError(400);
+            throw HttpError(400, `${id} is not valid id`);
         }
         const contactById = await Contact.findById(id);
         if (!contactById) {
@@ -32,7 +36,7 @@ export const deleteContact = async (req, res, next) => {
     try {
         const { id } = req.params;
         if (!isValidObjectId(id)) {
-            throw HttpError(400);
+            throw HttpError(400, `${id} is not valid id`);
         }
         const removeContact = await Contact.findByIdAndDelete(id);
         if (!removeContact) {
@@ -61,6 +65,7 @@ export const createContact = async (req, res, next) => {
 export const updateContact = async (req, res, next) => {
     try {
         const { error } = updateContactSchema.validate(req.body);
+
         if (error) {
             throw HttpError(400, error.message);
         }
@@ -68,7 +73,7 @@ export const updateContact = async (req, res, next) => {
         const { id } = req.params;
 
         if (!isValidObjectId(id)) {
-            throw HttpError(400);
+            throw HttpError(400, `${id} is not valid id`);
         }
 
         const newUpdateContact = await Contact.findByIdAndUpdate(id, req.body, { new: true });
@@ -85,7 +90,7 @@ export const updateContact = async (req, res, next) => {
 
 export const updateStatusContact = async (req, res, next) => {
     try {
-        const { error } = updateContactSchema.validate(req.body);
+        const { error } = newUpdateStatusSchema.validate(req.body);
 
         if (error) {
             throw HttpError(400, error.message);
@@ -94,7 +99,7 @@ export const updateStatusContact = async (req, res, next) => {
         const { contactId } = req.params;
 
         if (!isValidObjectId(contactId)) {
-            throw HttpError(400);
+            throw HttpError(400, `${contactId} is not valid id`);
         }
 
         const newUpdateStatus = await Contact.findByIdAndUpdate(contactId, req.body, { new: true });
