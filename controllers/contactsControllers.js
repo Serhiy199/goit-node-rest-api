@@ -65,7 +65,6 @@ export const updateContact = async (req, res, next) => {
             throw HttpError(400, error.message);
         }
 
-        const key = Object.keys(req.body);
         const { id } = req.params;
 
         if (!isValidObjectId(id)) {
@@ -87,6 +86,7 @@ export const updateContact = async (req, res, next) => {
 export const updateStatusContact = async (req, res, next) => {
     try {
         const { error } = updateContactSchema.validate(req.body);
+
         if (error) {
             throw HttpError(400, error.message);
         }
