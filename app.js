@@ -5,7 +5,7 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 
 import contactsRouter from './routes/contactsRouter.js';
-import router from './routes/auth.js';
+import router from './routes/authRouter.js';
 
 const app = express();
 const DB_URI = process.env.DB_URI;

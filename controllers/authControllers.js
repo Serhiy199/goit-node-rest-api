@@ -2,6 +2,7 @@ import HttpError from '../helpers/HttpError.js';
 import User from '../models/user.js';
 import { authRegisterSchemas, authLoginSchemas } from '../schemas/authSchemas.js';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 export const userRegister = async (req, res, next) => {
     try {
@@ -57,7 +58,11 @@ export const userLogin = async (req, res, next) => {
             throw HttpError(401, 'Email or password is wrong');
         }
 
-        res.send({ token: 'Token' });
+        const token = jwt.sign({ id: user._id, name: user.name }, process.env.JWT_SECRET, {
+            expiresIn: 60 * 60,
+        });
+
+        res.send({ token });
     } catch (error) {
         next(error);
     }
