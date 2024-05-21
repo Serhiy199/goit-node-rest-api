@@ -5,6 +5,7 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 
 import contactsRouter from './routes/contactsRouter.js';
+import router from './routes/auth.js';
 
 const app = express();
 const DB_URI = process.env.DB_URI;
@@ -23,6 +24,7 @@ app.use(morgan('tiny'));
 app.use(cors());
 app.use(express.json());
 
+app.use('/users', router);
 app.use('/api/contacts', contactsRouter);
 
 app.use((_, res) => {
