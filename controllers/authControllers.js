@@ -1,16 +1,17 @@
 import HttpError from '../helpers/HttpError.js';
 import User from '../models/user.js';
-import { authRegisterSchemas, authLoginSchemas } from '../schemas/authSchemas.js';
+import authSchemas from '../schemas/authSchemas.js';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 export const userRegister = async (req, res, next) => {
     try {
-        const { error } = authRegisterSchemas.validate(req.body);
+        const { error } = authSchemas.validate(req.body);
         if (error) {
             throw HttpError(400, error.message);
         }
 
-        const { name, email, password } = req.body;
+        const { email, password } = req.body;
 
         const emailToLowerCase = email.toLowerCase();
 
@@ -23,12 +24,17 @@ export const userRegister = async (req, res, next) => {
         const passwordHash = await bcrypt.hash(password, 10);
 
         const newUser = await User.create({
-            name,
             email: emailToLowerCase,
             password: passwordHash,
         });
 
-        res.status(201).json(newUser);
+        res.status(201).json({
+            user: {
+                email: newUser,
+                email,
+                subscription: newUser.subscription,
+            },
+        });
     } catch (error) {
         next(error);
     }
@@ -36,7 +42,7 @@ export const userRegister = async (req, res, next) => {
 
 export const userLogin = async (req, res, next) => {
     try {
-        const { error } = authLoginSchemas.validate(req.body);
+        const { error } = authSchemas.validate(req.body);
         if (error) {
             throw HttpError(400, error.message);
         }
@@ -57,7 +63,17 @@ export const userLogin = async (req, res, next) => {
             throw HttpError(401, 'Email or password is wrong');
         }
 
-        res.send({ token: 'Token' });
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+            expiresIn: 60 * 60,
+        });
+
+        res.send({
+            token: token,
+            user: {
+                email: user.email,
+                subscription: user.subscription,
+            },
+        });
     } catch (error) {
         next(error);
     }
