@@ -17,10 +17,11 @@ const authMiddleware = async (req, res, next) => {
         }
 
         jwt.verify(token, process.env.JWT_SECRET, async (err, decode) => {
-            if (err) {
-                throw HttpError(401, 'Not authorized');
-            }
             try {
+                if (err) {
+                    throw HttpError(401, 'Not authorized');
+                }
+
                 const user = await User.findById(decode.id);
 
                 if (user === null) {
