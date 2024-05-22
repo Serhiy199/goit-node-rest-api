@@ -67,6 +67,7 @@ export const userLogin = async (req, res, next) => {
             expiresIn: 60 * 60,
         });
 
+        await User.findByIdAndUpdate(user._id, { token });
         res.send({
             token: token,
             user: {
@@ -74,6 +75,34 @@ export const userLogin = async (req, res, next) => {
                 subscription: user.subscription,
             },
         });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const userLogout = async (req, res, next) => {
+    try {
+        const userLogout = await User.findByIdAndUpdate(req.user.id, { token: null });
+
+        if (!userLogout) {
+            throw HttpError(404, 'Not authorized');
+        }
+
+        res.status(200).end();
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const userCurrent = async (req, res, next) => {
+    try {
+        const userById = await User.findOne({ _id: req.user.id });
+
+        if (!userById) {
+            throw HttpError(401, 'Not authorized');
+        }
+
+        res.json(userById);
     } catch (error) {
         next(error);
     }

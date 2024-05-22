@@ -7,9 +7,10 @@ import {
 import Contact from '../models/contact.js';
 import { isValidObjectId } from 'mongoose';
 
-export const getAllContacts = async (req, res) => {
+export const getAllContacts = async (req, res, next) => {
     try {
         const arrContacts = await Contact.find({ owner: req.user.id });
+
         res.json(arrContacts);
     } catch (error) {
         next(error);
