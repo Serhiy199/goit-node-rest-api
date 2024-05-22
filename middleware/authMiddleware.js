@@ -6,23 +6,22 @@ const authMiddleware = async (req, res, next) => {
         const authorizationHeader = req.headers.authorization;
 
         if (typeof authorizationHeader === 'undefined') {
-            throw HttpError(401, 'Invalid token');
+            throw HttpError(401, 'Not authorized');
         }
 
         const [bearer, token] = authorizationHeader.split(' ', 2);
 
         if (bearer !== 'Bearer') {
-            throw HttpError(401, 'Invalid token');
+            throw HttpError(401, 'Not authorized');
         }
 
         jwt.verify(token, process.env.JWT_SECRET, (err, decode) => {
             if (err) {
-                throw HttpError(401, 'Invalid token');
+                throw HttpError(401, 'Not authorized');
             }
 
             req.user = {
                 id: decode.id,
-                name: decode.name,
             };
         });
 

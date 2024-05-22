@@ -1,12 +1,8 @@
 import Joi from 'joi';
 
-export const authRegisterSchemas = Joi.object({
-    name: Joi.string().required(),
+const authSchemas = Joi.object({
     email: Joi.string().email().required(),
     password: Joi.string().required(),
 });
 
-export const authLoginSchemas = Joi.object({
-    email: Joi.string().email().required(),
-    password: Joi.string().required(),
-});
+export default authSchemas;
