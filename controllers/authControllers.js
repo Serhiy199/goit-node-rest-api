@@ -30,8 +30,7 @@ export const userRegister = async (req, res, next) => {
 
         res.status(201).json({
             user: {
-                email: newUser,
-                email,
+                email: newUser.email,
                 subscription: newUser.subscription,
             },
         });
@@ -88,7 +87,7 @@ export const userLogout = async (req, res, next) => {
             throw HttpError(404, 'Not authorized');
         }
 
-        res.status(200).end();
+        res.status(204).end();
     } catch (error) {
         next(error);
     }
@@ -96,13 +95,12 @@ export const userLogout = async (req, res, next) => {
 
 export const userCurrent = async (req, res, next) => {
     try {
-        const userById = await User.findOne({ _id: req.user.id });
+        const user = {
+            email: req.user.email,
+            subscription: req.user.subscription,
+        };
 
-        if (!userById) {
-            throw HttpError(401, 'Not authorized');
-        }
-
-        res.json(userById);
+        res.json(user);
     } catch (error) {
         next(error);
     }
