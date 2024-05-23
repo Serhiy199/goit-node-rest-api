@@ -23,13 +23,8 @@ const authMiddleware = async (req, res, next) => {
                 }
 
                 const user = await User.findById(decode.id);
-                console.log(user);
 
-                if (user === null) {
-                    throw HttpError(401, 'Not authorized');
-                }
-
-                if (user.token !== token) {
+                if (!user || !user.token || user.token !== token) {
                     throw HttpError(401, 'Not authorized');
                 }
 
