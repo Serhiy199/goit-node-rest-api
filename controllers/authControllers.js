@@ -109,12 +109,12 @@ export const userCurrent = async (req, res, next) => {
 };
 
 export const uploadAvatars = async (req, res, next) => {
-    // const { originalname } = req.file;
+    const { originalname } = req.file;
 
     try {
         await fs.rename(req.file.path, path.resolve('public/avatars', req.file.filename));
 
-        const avatarURL = path.join('avatar', req.file.filename);
+        const avatarURL = path.join('avatars', req.file.filename);
 
         const user = await User.findByIdAndUpdate(req.user.id, { avatarURL });
 
