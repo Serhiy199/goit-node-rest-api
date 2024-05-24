@@ -5,6 +5,7 @@ import authSchemas from '../schemas/authSchemas.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import path from 'node:path';
+import gravatar from 'gravatar';
 
 export const userRegister = async (req, res, next) => {
     try {
@@ -24,10 +25,12 @@ export const userRegister = async (req, res, next) => {
         }
 
         const passwordHash = await bcrypt.hash(password, 10);
+        const avatarURL = gravatar.url(emailToLowerCase);
 
         const newUser = await User.create({
             email: emailToLowerCase,
             password: passwordHash,
+            avatarURL,
         });
 
         res.status(201).json({
