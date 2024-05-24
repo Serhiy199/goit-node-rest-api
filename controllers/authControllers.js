@@ -1,8 +1,10 @@
+import * as fs from 'node:fs/promises';
 import HttpError from '../helpers/HttpError.js';
 import User from '../models/user.js';
 import authSchemas from '../schemas/authSchemas.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import path from 'node:path';
 
 export const userRegister = async (req, res, next) => {
     try {
@@ -101,6 +103,22 @@ export const userCurrent = async (req, res, next) => {
         };
 
         res.json(user);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const uploadAvatars = async (req, res, next) => {
+    // const { originalname } = req.file;
+
+    try {
+        await fs.rename(req.file.path, path.resolve('public/avatars', req.file.filename));
+
+        const avatarURL = path.join('avatar', req.file.filename);
+
+        const user = await User.findByIdAndUpdate(req.user.id, { avatarURL });
+
+        res.status(200).send({ avatarURL });
     } catch (error) {
         next(error);
     }
