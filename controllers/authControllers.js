@@ -6,7 +6,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import path from 'node:path';
 import gravatar from 'gravatar';
-import Jimp from 'jimp';
+import jimp from 'jimp';
 
 export const userRegister = async (req, res, next) => {
     try {
@@ -114,21 +114,18 @@ export const userCurrent = async (req, res, next) => {
 
 export const uploadAvatars = async (req, res, next) => {
     const { originalname } = req.file;
-    // console.log(req.file);
 
     try {
         if (!req.file) {
             throw HttpError(400, 'Avatar not uploaded');
         }
 
+        const userAvatar = await jimp.read(req.file.path);
+        await userAvatar.cover(250, 250).writeAsync(req.file.path);
+
         await fs.rename(req.file.path, path.resolve('public/avatars', req.file.filename));
 
         const avatarURL = path.join('avatars', req.file.filename);
-
-        // Jimp.read(avatarURL, (err, resizePhoto) => {
-        //     if (err) throw err;
-        //     resizePhoto.resize(25, 25).write(req.file.filename); // save
-        // });
 
         const user = await User.findByIdAndUpdate(req.user.id, { avatarURL });
 
