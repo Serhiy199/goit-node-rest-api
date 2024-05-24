@@ -1,5 +1,6 @@
 import HttpError from '../helpers/HttpError.js';
 import jwt from 'jsonwebtoken';
+import User from '../models/user.js';
 
 const authMiddleware = async (req, res, next) => {
     try {
@@ -15,17 +16,28 @@ const authMiddleware = async (req, res, next) => {
             throw HttpError(401, 'Not authorized');
         }
 
-        jwt.verify(token, process.env.JWT_SECRET, (err, decode) => {
-            if (err) {
-                throw HttpError(401, 'Not authorized');
+        jwt.verify(token, process.env.JWT_SECRET, async (err, decode) => {
+            try {
+                if (err) {
+                    throw HttpError(401, 'Not authorized');
+                }
+
+                const user = await User.findById(decode.id);
+
+                if (!user || !user.token || user.token !== token) {
+                    throw HttpError(401, 'Not authorized');
+                }
+
+                req.user = {
+                    id: user.id,
+                    email: user.email,
+                    subscription: user.subscription,
+                };
+                next();
+            } catch (error) {
+                next(error);
             }
-
-            req.user = {
-                id: decode.id,
-            };
         });
-
-        next();
     } catch (error) {
         next(error);
     }

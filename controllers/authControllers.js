@@ -1,8 +1,10 @@
+import * as fs from 'node:fs/promises';
 import HttpError from '../helpers/HttpError.js';
 import User from '../models/user.js';
 import authSchemas from '../schemas/authSchemas.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import path from 'node:path';
 
 export const userRegister = async (req, res, next) => {
     try {
@@ -30,8 +32,7 @@ export const userRegister = async (req, res, next) => {
 
         res.status(201).json({
             user: {
-                email: newUser,
-                email,
+                email: newUser.email,
                 subscription: newUser.subscription,
             },
         });
@@ -67,6 +68,7 @@ export const userLogin = async (req, res, next) => {
             expiresIn: 60 * 60,
         });
 
+        await User.findByIdAndUpdate(user._id, { token });
         res.send({
             token: token,
             user: {
@@ -74,6 +76,49 @@ export const userLogin = async (req, res, next) => {
                 subscription: user.subscription,
             },
         });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const userLogout = async (req, res, next) => {
+    try {
+        const userLogout = await User.findByIdAndUpdate(req.user.id, { token: null });
+
+        if (!userLogout) {
+            throw HttpError(404, 'Not authorized');
+        }
+
+        res.status(204).end();
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const userCurrent = async (req, res, next) => {
+    try {
+        const user = {
+            email: req.user.email,
+            subscription: req.user.subscription,
+        };
+
+        res.json(user);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const uploadAvatars = async (req, res, next) => {
+    const { originalname } = req.file;
+
+    try {
+        await fs.rename(req.file.path, path.resolve('public/avatars', req.file.filename));
+
+        const avatarURL = path.join('avatars', req.file.filename);
+
+        const user = await User.findByIdAndUpdate(req.user.id, { avatarURL });
+
+        res.status(200).send({ avatarURL });
     } catch (error) {
         next(error);
     }
