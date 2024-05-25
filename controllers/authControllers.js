@@ -113,8 +113,6 @@ export const userCurrent = async (req, res, next) => {
 };
 
 export const uploadAvatars = async (req, res, next) => {
-    const { originalname } = req.file;
-
     try {
         if (!req.file) {
             throw HttpError(400, 'Avatar not uploaded');
