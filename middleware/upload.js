@@ -4,7 +4,6 @@ import crypto from 'node:crypto';
 
 const storage = multer.diskStorage({
     destination(req, file, cd) {
-        console.log(req.body);
         cd(null, path.resolve('tmp'));
     },
     filename(req, file, cd) {
