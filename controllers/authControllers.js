@@ -1,4 +1,5 @@
 import * as fs from 'node:fs/promises';
+import { nanoid } from 'nanoid';
 import HttpError from '../helpers/HttpError.js';
 import User from '../models/user.js';
 import authSchemas from '../schemas/authSchemas.js';
@@ -7,6 +8,7 @@ import jwt from 'jsonwebtoken';
 import path from 'node:path';
 import gravatar from 'gravatar';
 import jimp from 'jimp';
+import mail from '../mail.js';
 
 export const userRegister = async (req, res, next) => {
     try {
@@ -28,10 +30,21 @@ export const userRegister = async (req, res, next) => {
         const passwordHash = await bcrypt.hash(password, 10);
         const avatarURL = gravatar.url(emailToLowerCase);
 
+        const verificationToken = nanoid();
+
         const newUser = await User.create({
             email: emailToLowerCase,
             password: passwordHash,
             avatarURL,
+            verificationToken,
+        });
+
+        mail.sendMail({
+            to: emailToLowerCase,
+            from: 'bryklin.best.1994#Gmail.com',
+            subject: 'Welcom to Contact collection',
+            html: `To confirm your email please go to the <a href="http://localhost:3000/users/verify/${verificationToken}">LINK</a>`,
+            text: `To confirm your email please open the link http://localhost:3000/users/verify/${verificationToken}`,
         });
 
         res.status(201).json({
@@ -66,6 +79,10 @@ export const userLogin = async (req, res, next) => {
 
         if (isMatch === false) {
             throw HttpError(401, 'Email or password is wrong');
+        }
+
+        if (user.verify === false) {
+            throw HttpError(404, 'User not found');
         }
 
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -128,6 +145,26 @@ export const uploadAvatars = async (req, res, next) => {
         const user = await User.findByIdAndUpdate(req.user.id, { avatarURL });
 
         res.status(200).send({ avatarURL });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const userVerify = async (req, res, next) => {
+    try {
+        const { verificationToken } = req.params;
+        const user = await User.findOne({ verificationToken: verificationToken });
+
+        if (user === null) {
+            throw HttpError(404, 'User not found');
+        }
+
+        await User.findByIdAndUpdate(user._id, {
+            verify: true,
+            verificationToken: null,
+        });
+
+        res.status(200).send({ message: 'Verification successful' });
     } catch (error) {
         next(error);
     }
