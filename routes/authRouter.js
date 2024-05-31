@@ -8,13 +8,16 @@ import {
     userCurrent,
     uploadAvatars,
     userVerify,
+    userResendVerifyEmail,
 } from '../controllers/authControllers.js';
 
 const router = express.Router();
 
 import authMiddleware from '../middleware/authMiddleware.js';
-router.get('/verify/:verificationToken', userVerify);
+
 router.post('/register', userRegister);
+router.get('/verify/:verificationToken', userVerify);
+router.post('/verify', userResendVerifyEmail);
 router.post('/login', userLogin);
 router.post('/logout', authMiddleware, userLogout);
 router.get('/current', authMiddleware, userCurrent);

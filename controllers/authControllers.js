@@ -2,7 +2,7 @@ import * as fs from 'node:fs/promises';
 import { nanoid } from 'nanoid';
 import HttpError from '../helpers/HttpError.js';
 import User from '../models/user.js';
-import authSchemas from '../schemas/authSchemas.js';
+import { authSchemas, emailSchemas } from '../schemas/authSchemas.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import path from 'node:path';
@@ -42,7 +42,7 @@ export const userRegister = async (req, res, next) => {
         mail.sendMail({
             to: emailToLowerCase,
             from: 'bryklin.best.1994#Gmail.com',
-            subject: 'Welcom to Contact collection',
+            subject: 'Welcome to Contact collection',
             html: `To confirm your email please go to the <a href="http://localhost:3000/users/verify/${verificationToken}">LINK</a>`,
             text: `To confirm your email please open the link http://localhost:3000/users/verify/${verificationToken}`,
         });
@@ -165,6 +165,40 @@ export const userVerify = async (req, res, next) => {
         });
 
         res.status(200).send({ message: 'Verification successful' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const userResendVerifyEmail = async (req, res, next) => {
+    try {
+        const { error } = emailSchemas.validate(req.body);
+
+        if (error) {
+            throw HttpError(400, error.message);
+        }
+
+        const { email } = req.body;
+        const emailToLowerCase = email.toLowerCase();
+        const user = await User.findOne({ email: emailToLowerCase });
+
+        if (!user) {
+            throw HttpError(404, 'User not found');
+        }
+
+        if (user.verify) {
+            throw HttpError(400, 'Verification has already been passed');
+        }
+
+        mail.sendMail({
+            to: emailToLowerCase,
+            from: 'bryklin.best.1994#Gmail.com',
+            subject: 'Welcome to Contact collection',
+            html: `To confirm your email please go to the <a href="http://localhost:3000/users/verify/${user.verificationToken}">LINK</a>`,
+            text: `To confirm your email please open the link http://localhost:3000/users/verify/${user.verificationToken}`,
+        });
+
+        res.status(200).send({ message: 'Verification email sent' });
     } catch (error) {
         next(error);
     }
